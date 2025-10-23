@@ -5,327 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Captain Seawall on Tank — vs. Creature from the Black Lagoon</title>
   <style>
-    :root { --bg:#0a2458; --sea:#0c3c7c; --foam:#bfe9ff; --pond:#2b7a2b; --boom:#ffd166; --ui:#f1f5f9; --muted:#94a3b8; }
+    :root { --bg:#0a2458; --ground:#2f4a20; --boom:#ffd166; --ui:#f1f5f9; --muted:#94a3b8; }
     * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: linear-gradient(#0a2458, #081a3e); color: var(--ui); min-height: 100dvh; display:grid; grid-template-rows:auto 1fr auto; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; background: linear-gradient(#0a2458, #081a3e); color: var(--ui); min-height: 100dvh; display:grid; grid-template-rows:auto 1fr auto; }
     header { padding: 14px 18px; display:flex; gap:16px; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,.08); }
     header h1 { margin:0; font-size: clamp(16px, 2.4vw, 22px); letter-spacing:.3px; }
     #hud { display:flex; gap:8px; flex-wrap:wrap; }
     button { appearance:none; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:var(--ui); padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer; transition: transform .05s ease, background .2s; }
     button:hover{ background:rgba(255,255,255,.14); }
     button:active{ transform: translateY(1px) scale(.98); }
+
     #scene { position:relative; overflow:hidden; height:65vh; min-height:420px; background: radial-gradient(120% 120% at 50% -10%, #1d4ed8 0%, #0a2458 55%, #081a3e 100%); border-radius: 18px; margin: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.35) inset; }
-    /* Terrain */
-    .terrain { position:absolute; inset:auto 0 0 0; height:46%; background: linear-gradient(180deg, #3b5e2b, #1f3c18 65%); overflow:visible; }
-    .grass { position:absolute; inset:auto 0 0 0; height:20px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 8px, transparent 8px 18px); opacity:.18; filter: blur(0.5px); }
-    .pond { position:absolute; left:58%; bottom:14%; width: 260px; height: 120px; background: radial-gradient(60% 100% at 50% 35%, #2a9957 0, #1f7c46 45%, #155e34 65%, #0f4a29 90%); border-radius: 50% / 38%; box-shadow: inset 0 8px 22px rgba(0,0,0,.35), 0 8px 22px rgba(0,0,0,.35); }
-    .reeds { position:absolute; bottom:calc(14% + 90px); left:calc(58% + 20px); display:flex; gap:6px; }
-    .reed { width:4px; height:50px; background:#14532d; border-radius:2px; box-shadow:0 0 6px rgba(0,0,0,.3); transform-origin:bottom; animation: sway 4s ease-in-out infinite alternate; }
-    .reed:nth-child(2){ height:64px; animation-duration: 5s; }
-    .reed:nth-child(3){ height:58px; animation-duration: 4.6s; }
-    @keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg);} }
 
-    /* Tank & enemy */
-    #tank { position:absolute; left: 10%; bottom: 36%; width: 190px; height: 80px; }
-    .t-body { position:absolute; bottom:18px; width:170px; height:46px; background: linear-gradient(180deg, #475569, #374151); border-radius: 12px; box-shadow: inset 0 -6px 0 rgba(0,0,0,.25); }
-    .t-turret { position:absolute; left:48px; bottom:38px; width:70px; height:34px; background: linear-gradient(180deg, #64748b, #475569); border-radius: 10px; }
-    .t-barrel { position:absolute; left:110px; bottom:54px; width:100px; height:10px; background: #94a3b8; border-radius: 6px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.3); transform-origin:left center; }
-    .t-track { position:absolute; bottom:0; width:190px; height:26px; background: #111827; border-radius: 8px; display:flex; align-items:center; gap:10px; padding:0 8px; }
-    .wheel { width:18px; height:18px; background:#374151; border-radius:50%; box-shadow: inset 0 0 0 3px #111827; }
+    .terrain { position:absolute; inset:auto 0 0 0; height:44%; background: linear-gradient(180deg, var(--ground), #1b2e11 65%); z-index:1; }
+    .pond { position:absolute; left:58%; bottom:14%; width: 280px; height: 130px; background: radial-gradient(60% 100% at 50% 35%, #2a9957 0, #1f7c46 45%, #155e34 65%, #0f4a29 90%); border-radius: 50% / 38%; box-shadow: inset 0 8px 22px rgba(0,0,0,.35), 0 8px 22px rgba(0,0,0,.35); z-index:1; }
 
-    #enemy { position:absolute; right: 14%; bottom: 34%; width: 180px; height: 120px; }
-    .lagoon { position:absolute; left:0; top:30px; width:180px; height:90px; border-radius: 50% / 40%; background: radial-gradient(circle at 50% 40%, #34d399 0 40%, #16a34a 60% 100%); box-shadow: 0 8px 18px rgba(0,0,0,.35); }
-    .creature { position:absolute; left:26px; top:0; width:128px; height:96px; background: radial-gradient(circle at 50% 30%, #6ee7b7 0 24%, #22c55e 25% 62%, #16a34a 63% 100%); border-radius: 50% 50% 40% 40% / 45% 45% 55% 55%; box-shadow: 0 8px 18px rgba(0,0,0,.35); }
-    .eye { position:absolute; top:26px; width:16px; height:16px; border-radius:50%; background:#f8fafc; box-shadow:0 0 0 3px rgba(0,0,0,.2) inset; }
-    .eye.l { left:44px; }
-    .eye.r { left:76px; }
+    #tank { position:absolute; left: 10%; bottom: 48%; width: 210px; height: 90px; z-index:6; filter: brightness(1.2) drop-shadow(0 6px 18px rgba(0,0,0,.55)) drop-shadow(0 0 8px rgba(255,255,255,.22)); }
+    .t-body { position:absolute; bottom:18px; width:190px; height:50px; background: linear-gradient(180deg, #93a0af, #4b5563); border-radius: 12px; box-shadow: inset 0 -6px 0 rgba(0,0,0,.25), 0 0 0 2px rgba(255,255,255,.15); }
+    .t-turret { position:absolute; left:56px; bottom:44px; width:78px; height:36px; background: linear-gradient(180deg, #cbd5e1, #64748b); border-radius: 10px; box-shadow: 0 0 8px rgba(255,255,255,.28) inset, 0 0 0 2px rgba(0,0,0,.25); }
+    .t-barrel { position:absolute; left:124px; bottom:58px; width:110px; height:10px; background: #e5e7eb; border-radius: 6px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.3), 0 0 0 2px rgba(0,0,0,.25); transform-origin:left center; }
+    .t-track { position:absolute; bottom:0; width:210px; height:28px; background: #0b1020; border-radius: 8px; display:flex; align-items:center; gap:10px; padding:0 8px; box-shadow: 0 0 0 2px rgba(255,255,255,.08); }
+    .wheel { width:18px; height:18px; background:#374151; border-radius:50%; box-shadow: inset 0 0 0 3px #0b1020; }
+
+    #enemy { position:absolute; right: 14%; bottom: 42%; width: 200px; height: 140px; z-index:2; }
+    .lagoon { position:absolute; left:0; top:40px; width:200px; height:100px; border-radius: 50% / 40%; background: radial-gradient(circle at 50% 40%, #34d399 0 40%, #16a34a 60% 100%); box-shadow: 0 8px 18px rgba(0,0,0,.35); }
+    .creature { position:absolute; left:32px; top:0; width:136px; height:104px; background: radial-gradient(circle at 50% 30%, #6ee7b7 0 24%, #22c55e 25% 62%, #16a34a 63% 100%); border-radius: 50% 50% 40% 40% / 45% 45% 55% 55%; box-shadow: 0 8px 18px rgba(0,0,0,.35); }
+    .eye { position:absolute; top:28px; width:16px; height:16px; border-radius:50%; background:#f8fafc; box-shadow:0 0 0 3px rgba(0,0,0,.2) inset; }
+    .eye.l { left:48px; }
+    .eye.r { left:82px; }
     .pupil { position:absolute; inset:4px; border-radius:50%; background:#0f172a; }
-    .mouth { position:absolute; left:42px; top:62px; width:56px; height:16px; border-radius: 0 0 12px 12px; background:#065f46; box-shadow: inset 0 -4px 0 rgba(0,0,0,.3); }
-    .slime { position:absolute; left:0; right:0; top:64px; height:20px; background: radial-gradient(120% 100% at 50% 0, rgba(255,255,255,.2), transparent 60%); border-radius:0 0 60% 60%; opacity:.35; }
+    .mouth { position:absolute; left:46px; top:68px; width:56px; height:16px; border-radius: 0 0 12px 12px; background:#065f46; box-shadow: inset 0 -4px 0 rgba(0,0,0,.3); }
 
-    /* Projectiles & booms */
-    .cannonball { position:absolute; width:14px; height:14px; border-radius:50%; background:#e5e7eb; box-shadow: 0 0 12px rgba(255,255,255,.7); pointer-events:none; }
-    .boom { position:absolute; width:24px; height:24px; border-radius:50%; background: radial-gradient(circle, #fff 0 40%, var(--boom) 41% 62%, transparent 63%); opacity:0; transform: scale(.2); pointer-events:none; }
-    .boom.show { animation: kaboom .5s ease forwards; }
-    @keyframes kaboom { 0%{ opacity:.0; transform:scale(.2) } 30%{ opacity:1; transform:scale(1.8) } 100%{ opacity:0; transform:scale(.3) } }
-
-    /* Smoke plume */
-    .smoke { position:absolute; width:8px; height:8px; border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,.9), rgba(148,163,184,.6)); opacity:.9; pointer-events:none; animation: puff 900ms ease-out forwards; filter: blur(0.5px); }
-    @keyframes puff { 0% { transform: translate(0,0) scale(.8); opacity:.9 } 60% { transform: translate(14px,-24px) scale(1.4); opacity:.6 } 100% { transform: translate(26px,-48px) scale(1.8); opacity:0 } }
-
-    /* Sludge splash */
-    .sludge { position:absolute; width:10px; height:10px; border-radius:50%; background:#14532d; box-shadow: 0 0 8px rgba(0,0,0,.4) inset; animation: lob 800ms ease-out forwards; }
-    @keyframes lob { 0%{ transform: translate(0,0) } 60%{ transform: translate(var(--dx), calc(var(--dy) - 40px)) } 100%{ transform: translate(var(--dx), var(--dy)) } }
-
-    /* Victory banner */
-    #victory { position:absolute; inset: 0; display:grid; place-items:center; background: radial-gradient( circle at 50% 70%, rgba(255,255,255,.08), transparent 60% ); opacity:0; pointer-events:none; transition: opacity .5s ease; }
-    #victory.show { opacity:1; }
-    #victory h2 { font-size: clamp(28px, 5vw, 64px); margin:0; text-shadow: 0 6px 24px rgba(0,0,0,.55); }
-
-    footer { padding: 14px 18px; display:flex; gap:12px; align-items:center; justify-content:space-between; color: var(--muted) }
-    .kbd { padding:2px 8px; border:1px solid rgba(255,255,255,.2); border-radius:8px; color:#e2e8f0; }
+    #health { position:absolute; top:14px; right:14px; width:220px; height:18px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; border:1px solid rgba(255,255,255,.2); z-index:10; }
+    #healthFill { width:100%; height:100%; background: linear-gradient(90deg, #22c55e, #84cc16); transition: width .35s ease; }
   </style>
 </head>
 <body>
   <header>
     <h1>🛡️ Captain <strong>Seawall</strong> on a Tank vs. 👾 Creature from the Black Lagoon</h1>
     <div id="hud">
-      <button id="armBtn" title="Enable audio & arm cannons">🔊 Arm Cannons</button>
+      <button id="armBtn">🔊 Arm Cannons</button>
       <button id="fireBtn">🔥 Fire</button>
       <button id="volleyBtn">💥 Triple Volley</button>
-      <button id="musicBtn" aria-pressed="false">🎵 Music: Off</button>
-      <button id="trackBtn" title="Switch background march">🎼 Change Track</button>
+      <button id="musicBtn">🎵 Music</button>
       <button id="restartBtn">🔄 Restart</button>
     </div>
   </header>
-
-  <main id="scene" aria-label="Battle scene" role="img">
-    <div id="health" aria-hidden="true"><div id="healthFill" style="width:100%"></div></div>
-
-    <div id="tank" aria-label="Captain Seawall's Tank">
-      <div class="t-body"></div>
-      <div class="t-turret"></div>
-      <div class="t-barrel" id="barrel"></div>
-      <div class="t-track">
-        <div class="wheel"></div><div class="wheel"></div><div class="wheel"></div><div class="wheel"></div><div class="wheel"></div>
-      </div>
-    </div>
-
-    <div id="enemy" aria-label="Creature from the Black Lagoon in a pond">
-      <div class="lagoon"></div>
-      <div class="creature">
-        <div class="eye l"><div class="pupil"></div></div>
-        <div class="eye r"><div class="pupil"></div></div>
-        <div class="mouth"></div>
-        <div class="slime"></div>
-      </div>
-    </div>
-
-    <div class="terrain">
-      <div class="pond"></div>
-      <div class="grass"></div>
-      <div class="reeds"><div class="reed"></div><div class="reed"></div><div class="reed"></div></div>
-    </div>
-
-    <div id="victory" aria-live="polite" aria-atomic="true">
-      <h2>Seawall reigns supreme!</h2>
-    </div>
+  <main id="scene">
+    <div id="health"><div id="healthFill"></div></div>
+    <div id="tank"><div class="t-body"></div><div class="t-turret"></div><div class="t-barrel" id="barrel"></div><div class="t-track"><div class="wheel"></div><div class="wheel"></div><div class="wheel"></div></div></div>
+    <div id="enemy"><div class="lagoon"></div><div class="creature"><div class="eye l"><div class="pupil"></div></div><div class="eye r"><div class="pupil"></div></div><div class="mouth"></div></div></div>
+    <div class="terrain"><div class="pond"></div></div>
   </main>
-
-  <footer>
-    <div>Tip: hit <span class="kbd">F</span> or <span class="kbd">Space</span> to fire. <span class="kbd">V</span> volleys. <span class="kbd">M</span> toggles music. <span class="kbd">T</span> changes track.</div>
-    <div>Built for fun — no ads, no trackers.</div>
-  </footer>
-
-  <script>
-    // --- Audio setup with user-gesture unlock ---
-    const SFX = {
-      cannon: new Audio('https://actions.google.com/sounds/v1/weapons/cannon.ogg'),
-      splash: new Audio('https://actions.google.com/sounds/v1/water/splash.ogg'),
-      boom: new Audio('https://actions.google.com/sounds/v1/explosions/explosion.ogg'),
-    };
-
-    // Public-domain / no-attribution military marches
-    const TRACKS = [
-      {
-        title: 'Liberty Bell March — U.S. Army Field Band (PD)',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/2/21/The_Liberty_Bell_March_-_U.S._Army_Field_Band.ogg'
-      },
-      {
-        title: 'Mikado March — U.S. Marine Band (PD)',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Sousa%27s_%22Mikado_March%22_-_United_States_Marine_Band_%282016%29.ogg'
-      }
-    ];
-
-    let currentTrack = 0;
-    const MUSIC = new Audio(TRACKS[currentTrack].url);
-    MUSIC.loop = true; MUSIC.volume = 0.35; Object.values(SFX).forEach(a => { a.preload = 'auto'; a.volume = 0.7; });
-
-    let audioArmed = false;
-    function armAudio() {
-      if (audioArmed) return;
-      try { Object.values(SFX).forEach(a => { a.play().then(()=>a.pause()).catch(()=>{}); }); MUSIC.play().then(()=>{ MUSIC.pause(); MUSIC.currentTime = 0; }).catch(()=>{}); } catch(e) {}
-      audioArmed = true; armBtn.disabled = true; armBtn.textContent = '🔓 Audio Unlocked';
-    }
-
-    // --- DOM refs ---
-    const scene = document.getElementById('scene');
-    const fireBtn = document.getElementById('fireBtn');
-    const volleyBtn = document.getElementById('volleyBtn');
-    const musicBtn = document.getElementById('musicBtn');
-    const trackBtn = document.getElementById('trackBtn');
-    const enemy = document.getElementById('enemy');
-    const healthFill = document.getElementById('healthFill');
-    const victory = document.getElementById('victory');
-    const restartBtn = document.getElementById('restartBtn');
-    const armBtn = document.getElementById('armBtn');
-
-    // --- State ---
-    let health = 100;
-    let musicOn = false;
-
-    function updateHealth(delta=0) {
-      health = Math.max(0, Math.min(100, health + delta));
-      healthFill.style.width = health + '%';
-      if (health <= 0) {
-        showVictory();
-      }
-    }
-
-    function showVictory(){
-      victory.classList.add('show');
-      // celebratory booms
-      for (let i=0; i<6; i++) setTimeout(()=>makeBoom(enemy.offsetLeft+60+rand(-30,30), enemy.offsetTop+40+rand(-20,20)), 120*i);
-    }
-
-    function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-
-    function fireOne(startX, startY, targetEl){
-      const b = document.createElement('div');
-      b.className = 'cannonball';
-      const tRect = targetEl.getBoundingClientRect();
-      const sRect = scene.getBoundingClientRect();
-      const tx = tRect.left - sRect.left + tRect.width/2 + rand(-30,30);
-      const ty = tRect.top - sRect.top + tRect.height/2 + rand(-10,20);
-      const dx = tx - startX, dy = ty - startY;
-      const dist = Math.hypot(dx,dy);
-      const steps = Math.max(30, Math.min(120, Math.floor(dist / 8)));
-
-      b.style.left = startX + 'px';
-      b.style.top = startY + 'px';
-      scene.appendChild(b);
-
-      // smoke puffs at barrel
-      for (let i=0;i<3;i++) setTimeout(()=>makeSmoke(startX, startY), i*90);
-
-      let i=0;
-      const id = setInterval(()=>{
-        i++;
-        const p = i/steps;
-        const x = startX + dx * p;
-        const y = startY + dy * p - 80*Math.sin(Math.PI*p); // arc
-        b.style.left = x + 'px';
-        b.style.top = y + 'px';
-        if (i===1 && audioArmed) SFX.cannon.currentTime=0, SFX.cannon.play().catch(()=>{});
-        if (i>=steps) {
-          clearInterval(id);
-          b.remove();
-          if (audioArmed) SFX.boom.currentTime=0, SFX.boom.play().catch(()=>{});
-          makeBoom(tx,ty);
-          spawnSludgeSplash(tx,ty);
-          updateHealth(-rand(8,16));
-          creatureCounter();
-        }
-      }, 16);
-    }
-
-    function makeBoom(x,y){
-      const boom = document.createElement('div');
-      boom.className = 'boom show';
-      boom.style.left = (x-12) + 'px';
-      boom.style.top = (y-12) + 'px';
-      scene.appendChild(boom);
-      setTimeout(()=>boom.remove(), 520);
-    }
-
-    function makeSmoke(x,y){
-      const s = document.createElement('div');
-      s.className = 'smoke';
-      s.style.left = (x-6) + 'px';
-      s.style.top = (y-6) + 'px';
-      scene.appendChild(s);
-      setTimeout(()=>s.remove(), 900);
-    }
-
-    function spawnSludgeSplash(x,y){
-      for (let i=0;i<5;i++) {
-        const d = document.createElement('div');
-        d.className = 'sludge';
-        const dx = rand(-24,24); const dy = rand(-10,18);
-        d.style.left = (x) + 'px';
-        d.style.top = (y) + 'px';
-        d.style.setProperty('--dx', dx+'px');
-        d.style.setProperty('--dy', dy+'px');
-        scene.appendChild(d);
-        setTimeout(()=>d.remove(), 820);
-      }
-    }
-
-    function creatureCounter(){
-      // creature lobs a slime blob toward the tank tip
-      const targetX = document.getElementById('tank').getBoundingClientRect().left - scene.getBoundingClientRect().left + 40;
-      const targetY = document.getElementById('tank').getBoundingClientRect().top - scene.getBoundingClientRect().top + 20;
-      const startX = enemy.getBoundingClientRect().left - scene.getBoundingClientRect().left + 40;
-      const startY = enemy.getBoundingClientRect().top - scene.getBoundingClientRect().top + 20;
-      const blob = document.createElement('div'); blob.className='sludge';
-      blob.style.left = startX+'px'; blob.style.top = startY+'px';
-      blob.style.setProperty('--dx', (targetX-startX)+'px');
-      blob.style.setProperty('--dy', (targetY-startY)+'px');
-      scene.appendChild(blob);
-      setTimeout(()=>blob.remove(), 820);
-    }
-
-    function fire(){
-      // start position from tank barrel tip
-      const barrel = document.getElementById('barrel');
-      const sRect = scene.getBoundingClientRect();
-      const r = barrel.getBoundingClientRect();
-      const startX = r.left - sRect.left + r.width + 2;
-      const startY = r.top - sRect.top + r.height/2;
-      fireOne(startX, startY, enemy);
-    }
-
-    function volley(){
-      fire();
-      setTimeout(fire, 140);
-      setTimeout(fire, 280);
-    }
-
-    function toggleMusic(){
-      if (!audioArmed) armAudio();
-      musicOn = !musicOn;
-      musicBtn.setAttribute('aria-pressed', String(musicOn));
-      musicBtn.textContent = musicOn ? `🎵 Music: On — ${TRACKS[currentTrack].title}` : '🎵 Music: Off';
-      if (musicOn) { MUSIC.currentTime = 0; MUSIC.play().catch(()=>{}); }
-      else { MUSIC.pause(); }
-    }
-    function changeTrack(){
-      currentTrack = (currentTrack + 1) % TRACKS.length;
-      const wasPlaying = musicOn && !MUSIC.paused;
-      MUSIC.pause();
-      MUSIC.src = TRACKS[currentTrack].url;
-      MUSIC.load();
-      musicBtn.textContent = musicOn ? `🎵 Music: On — ${TRACKS[currentTrack].title}` : '🎵 Music: Off';
-      if (wasPlaying) MUSIC.play().catch(()=>{});
-    }
-
-    function restart(){
-      health = 100; updateHealth(0);
-      victory.classList.remove('show');
-      MUSIC.pause(); musicOn=false; musicBtn.textContent = '🎵 Music: Off'; musicBtn.setAttribute('aria-pressed','false');
-    }
-
-    // --- Wire up events after DOM is ready ---
-    document.addEventListener('DOMContentLoaded', () => {
-      fireBtn.addEventListener('click', fire);
-      volleyBtn.addEventListener('click', volley);
-      musicBtn.addEventListener('click', toggleMusic);
-      trackBtn.addEventListener('click', changeTrack);
-      restartBtn.addEventListener('click', restart);
-      armBtn.addEventListener('click', armAudio);
-
-      // Keyboard shortcuts
-      window.addEventListener('keydown', (e)=>{
-        if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
-        if (e.code === 'Space' || e.key.toLowerCase()==='f') { e.preventDefault(); fire(); }
-        if (e.key.toLowerCase()==='v') { volley(); }
-        if (e.key.toLowerCase()==='m') { toggleMusic(); }
-        if (e.key.toLowerCase()==='t') { changeTrack(); }
-      });
-
-      // First click anywhere also arms audio for convenience
-      scene.addEventListener('pointerdown', armAudio, { once:true });
-    });
-  </script>
 </body>
 </html>
